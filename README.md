@@ -1,6 +1,6 @@
-
 ```
-boiler-plate
+
+vulnerable-website
 ├─ client
 │  ├─ package-lock.json
 │  ├─ package.json
@@ -48,12 +48,14 @@ boiler-plate
 │        └─ user_reducer.js
 ├─ package-lock.json
 ├─ package.json
+├─ README.md
 └─ server
    ├─ config
    ├─ index.js
    ├─ middleware
    │  └─ auth.js
    ├─ models
+   │  ├─ Coupon.js
    │  ├─ Order.js
    │  ├─ Product.js
    │  ├─ Refund.js
