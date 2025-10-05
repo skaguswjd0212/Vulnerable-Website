@@ -1,25 +1,25 @@
 const express = require('express')
 const app = express()
 const port = 5000
-const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
-const { User } = require("./models/User");
-const { auth } = require('./middleware/auth')
+const mongoose = require('mongoose');
 const config = require("./config/dev")
 
-app.use(bodyParser.urlencoded({extended: true}));
-app.use(bodyParser.json());
-app.use(cookieParser());
+const { Coupon } = require("./models/Coupon");
+const { User } = require("./models/User");
+const { auth } = require('./middleware/auth')
 
-const mongoose = require('mongoose');
+//DB 연결
 mongoose.connect(config.mongoURI).then(() => console.log('MongoDB Connected...'))
 .catch(err => console.log(err))
 
-app.get('/',(req, res) => res.send('Hello World!')) 
+//Middleware 설정
+app.use(express.urlencoded({extended: true}));
+app.use(express.json());
+app.use(cookieParser());
 
-app.get('/api/hello', (req, res) =>{
-    res.send("안녕하세요")
-})
+// 라우터 연결
+app.use('/api/orders', require('./routes/orders'));
 
 app.post('/api/users/register', (req, res) => {
     const user = new User(req.body)
@@ -76,6 +76,25 @@ app.get('/api/users/logout', auth, (req, res) => {
         .catch(err => {
             return res.json({ success: false, err });
         });
+});
+
+// 쿠폰 조회
+app.get('/api/coupons/:code', auth, async (req, res) => {
+    try {
+        const coupon = await Coupon.findOne({code: req.params.code});
+        
+        if(!coupon) {
+            return res.json({success: false, message: '유효하지 않은 쿠폰'});
+        }
+        
+        if(coupon.usedAt) {
+            return res.json({success: false, message: '이미 사용된 쿠폰'});
+        }
+        
+        res.json({success: true, coupon});
+    } catch(err) {
+        res.json({success: false, error: err.message});
+    }
 });
 
 app.listen(port, () => console.log('Example app listening on port ${port}!'))
